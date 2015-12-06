@@ -1,41 +1,20 @@
 import Rx from 'rx';
 import Cycle from '@cycle/core';
 import {h, makeDOMDriver} from '@cycle/dom';
+import Helpers from 'hyperscript-helpers';
+
+const {div, ul, li} = Helpers(h);
 
 import makeWebSocketDriver from './cycle-websocket-driver';
+import messageInput from './message-input.js';
 
 function intent(DOM, ws) {
-  const sendClicks$ = DOM.select('[data-js-send]')
-    .events('click');
-  const messageText$ = DOM.select('[data-js-text]')
-    .events('input')
-    .map(event => event.target.value);
-
   return {
-    messageSent$: messageText$.sample(sendClicks$),
+    newMessage$: DOM.select('.js-message-input')
+      .events('newmessage')
+      .pluck('detail'),
     messageReceived$: ws
   };
-}
-
-function view(state$) {
-  return state$.map(messages =>
-    h('div', [
-      h('input', {
-        type: 'text',
-        attributes: {
-          'data-js-text': ''
-        }
-      }, ['Send']),
-      h('button', {
-        attributes: {
-          'data-js-send': ''
-        }
-      }, ['Send']),
-      h('ol', [
-        messages.map(msg => h('li', msg))
-      ])
-    ])
-  );
 }
 
 function model(messageReceived$) {
@@ -43,22 +22,36 @@ function model(messageReceived$) {
     .scan((messages, msg) => {
       messages.push(msg)
       return messages;
-    }, []);
+    }, [])
+    .startWith([]);
+}
+
+function view(state$) {
+  return state$.map(messages =>
+    div([
+      h('message-input.js-message-input'),
+      ul(
+        messages.map(content => li([content]))
+      )
+    ])
+  );
 }
 
 function main({DOM, ws}) {
   const actions = intent(DOM, ws);
 
   const requests = {
-    ws: actions.messageSent$,
-      DOM: view(model(actions.messageReceived$))
+    DOM: view(model(actions.messageReceived$)),
+    ws: actions.newMessage$
   };
 
   return requests;
 }
 
 const drivers = {
-  DOM: makeDOMDriver('[data-js-app]'),
+  DOM: makeDOMDriver('[data-js-app]', {
+    'message-input': messageInput
+  }),
   ws: makeWebSocketDriver('ws://serviceworker-chat.elasticbeanstalk.com')
 };
 
