@@ -18226,7 +18226,7 @@ function intent(DOM, ws) {
 }
 
 function view(state$) {
-  return $state.map(function (messages) {
+  return state$.map(function (messages) {
     return (0, _dom.h)('div', [(0, _dom.h)('input', {
       type: 'text',
       attributes: {
@@ -18243,7 +18243,7 @@ function view(state$) {
 }
 
 function model(messageReceived$) {
-  return actions.messageReceived$.scan(function (messages, msg) {
+  return messageReceived$.scan(function (messages, msg) {
     messages.push(msg);
     return messages;
   }, []);
@@ -18257,7 +18257,7 @@ function main(_ref) {
 
   var requests = {
     ws: actions.messageSent$,
-    DOM: view(model(action.messageReceived$))
+    DOM: view(model(actions.messageReceived$))
   };
 
   return requests;

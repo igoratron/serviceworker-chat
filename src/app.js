@@ -18,7 +18,7 @@ function intent(DOM, ws) {
 }
 
 function view(state$) {
-  return $state.map(messages =>
+  return state$.map(messages =>
     h('div', [
       h('input', {
         type: 'text',
@@ -39,7 +39,7 @@ function view(state$) {
 }
 
 function model(messageReceived$) {
-  return actions.messageReceived$
+  return messageReceived$
     .scan((messages, msg) => {
       messages.push(msg)
       return messages;
