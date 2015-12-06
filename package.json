@@ -2,8 +2,8 @@
   "name": "lt-serviceworker",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
   "scripts": {
+    "start": "node src/server.js",
     "browserify": "browserify src/app.js -t babelify --outfile public/app.js"
   },
   "author": "",
