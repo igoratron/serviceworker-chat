@@ -12,7 +12,7 @@ function intent(DOM, ws) {
     .map(event => event.target.value);
 
   return {
-    messageSent$: messageText$.sample(sendClicks$)
+    messageSent$: messageText$.sample(sendClicks$),
     messageReceived$: ws
   };
 }
@@ -50,8 +50,8 @@ function main({DOM, ws}) {
   const actions = intent(DOM, ws);
 
   const requests = {
-    ws: actions.messageSent$
-    DOM: view(model(action.messageReceived$))
+    ws: actions.messageSent$,
+      DOM: view(model(actions.messageReceived$))
   };
 
   return requests;
@@ -59,7 +59,7 @@ function main({DOM, ws}) {
 
 const drivers = {
   DOM: makeDOMDriver('[data-js-app]'),
-  ws: makeWebSocketDriver('ws://localhost:8080')
+  ws: makeWebSocketDriver('ws://serviceworker-chat.elasticbeanstalk.com')
 };
 
 Cycle.run(main, drivers);

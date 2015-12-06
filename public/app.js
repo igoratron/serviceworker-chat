@@ -18213,34 +18213,51 @@ var _cycleWebsocketDriver2 = _interopRequireDefault(_cycleWebsocketDriver);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function main(_ref) {
-  var DOM = _ref.DOM;
-  var ws = _ref.ws;
-
+function intent(DOM, ws) {
   var sendClicks$ = DOM.select('[data-js-send]').events('click');
   var messageText$ = DOM.select('[data-js-text]').events('input').map(function (event) {
     return event.target.value;
   });
 
+  return {
+    messageSent$: messageText$.sample(sendClicks$),
+    messageReceived$: ws
+  };
+}
+
+function view(state$) {
+  return $state.map(function (messages) {
+    return (0, _dom.h)('div', [(0, _dom.h)('input', {
+      type: 'text',
+      attributes: {
+        'data-js-text': ''
+      }
+    }, ['Send']), (0, _dom.h)('button', {
+      attributes: {
+        'data-js-send': ''
+      }
+    }, ['Send']), (0, _dom.h)('ol', [messages.map(function (msg) {
+      return (0, _dom.h)('li', msg);
+    })])]);
+  });
+}
+
+function model(messageReceived$) {
+  return actions.messageReceived$.scan(function (messages, msg) {
+    messages.push(msg);
+    return messages;
+  }, []);
+}
+
+function main(_ref) {
+  var DOM = _ref.DOM;
+  var ws = _ref.ws;
+
+  var actions = intent(DOM, ws);
+
   var requests = {
-    ws: messageText$.sample(sendClicks$),
-    DOM: ws.scan(function (messages, msg) {
-      messages.push(msg);
-      return messages;
-    }, []).map(function (messages) {
-      return (0, _dom.h)('div', [(0, _dom.h)('input', {
-        type: 'text',
-        attributes: {
-          'data-js-text': ''
-        }
-      }, ['Send']), (0, _dom.h)('button', {
-        attributes: {
-          'data-js-send': ''
-        }
-      }, ['Send']), (0, _dom.h)('ol', [messages.map(function (msg) {
-        return (0, _dom.h)('li', msg);
-      })])]);
-    })
+    ws: actions.messageSent$,
+    DOM: view(model(action.messageReceived$))
   };
 
   return requests;
@@ -18248,7 +18265,7 @@ function main(_ref) {
 
 var drivers = {
   DOM: (0, _dom.makeDOMDriver)('[data-js-app]'),
-  ws: (0, _cycleWebsocketDriver2.default)('ws://localhost:8080')
+  ws: (0, _cycleWebsocketDriver2.default)('ws://serviceworker-chat.elasticbeanstalk.com')
 };
 
 _core2.default.run(main, drivers);
