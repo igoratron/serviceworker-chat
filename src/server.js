@@ -4,7 +4,7 @@ const Rx = require('rx');
 const PORT = process.env.PORT || 8080;
 const wss = new WebSocketServer({ port: PORT });
 
-console.log('Server listening on', PORT);
+console.log(Date(), 'Server listening on', PORT);
 
 const connects$ = Rx.Observable.fromEvent(wss, 'connection');
 
