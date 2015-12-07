@@ -1,16 +1,10 @@
 window.addEventListener('load', function onload(event) {
   navigator.serviceWorker
-    .register('/serviceworker.js')
-    .then(initialiseState)
-});
-
-function initialiseState() {
-  navigator.serviceWorker.ready
+    .register('serviceworker.js')
     .then(function getSubscription(registration) {
       return registration.pushManager.subscribe({userVisibleOnly: true});
     })
-    .catch(subscription => console.log(subscription));
-}
+});
 
 function subscriptionExists(subscription) {
   if(! subscription) {
