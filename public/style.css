@@ -10,6 +10,7 @@ body {
   background: rgb(240, 240, 240);
   font-family: 'Lato', sans-serif;
   font-size: 16px;
+  padding-bottom: 50px;
 }
 
 form {
@@ -21,6 +22,7 @@ form {
   left: 0;
   display: flex;
   border-top: 2px solid rgba(0, 0, 0, .15);
+  z-index: 2;
 }
 
 form button {
