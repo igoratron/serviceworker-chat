@@ -1,0 +1,5 @@
+{
+  "name": "ServiceWorker Demo",
+  "short_name": "demo",
+  "gcm_server_id": "884099655812"
+}
