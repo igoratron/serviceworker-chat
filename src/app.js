@@ -52,7 +52,7 @@ const drivers = {
   DOM: makeDOMDriver('[data-js-app]', {
     'message-input': messageInput
   }),
-  ws: makeWebSocketDriver('ws://serviceworker-chat.elasticbeanstalk.com')
+  ws: makeWebSocketDriver('wss://ws.igormatics.com/ws')
 };
 
 Cycle.run(main, drivers);

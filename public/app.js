@@ -18309,7 +18309,7 @@ var drivers = {
   DOM: (0, _dom.makeDOMDriver)('[data-js-app]', {
     'message-input': _messageInput2.default
   }),
-  ws: (0, _cycleWebsocketDriver2.default)('ws://serviceworker-chat.elasticbeanstalk.com')
+  ws: (0, _cycleWebsocketDriver2.default)('wss://ws.igormatics.com/ws')
 };
 
 _core2.default.run(main, drivers);
