@@ -1,3 +1,14 @@
+window.addEventListener('load', function onload() {
+  navigator.serviceWorker
+    .register('/serviceworker.js')
+    .then(registration =>
+      either(
+        () => registration.pushManager.getSubscription(),
+        () => registration.pushManager.subscribe({userVisibleOnly: true})
+      )
+    )
+    .then(subscription => sendSubscriptionToServer(subscription));
+});
 
 
 // =========== HELPERS =============
