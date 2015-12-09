@@ -1,6 +1,9 @@
 const WebSocketServer = require('ws').Server;
 const Rx = require('rx');
+const request = require('request');
 
+const GCM_HOST = "https://android.googleapis.com/gcm/send";
+const GCM_KEY = process.env.GCM_KEY;
 const PORT = process.env.PORT || 8080;
 const wss = new WebSocketServer({ port: PORT });
 
@@ -45,6 +48,7 @@ const messages$ = envelopes$
 
 const subscriptions$ = envelopes$
   .filter(envelope => envelope.subscription)
+  .pluck('subscription')
   .scan(function aggregateSubs(all, sub) {
     all.push(sub);
     return all;
@@ -57,11 +61,25 @@ Rx.Observable.combineLatest(
   subscriptions$,
   (sockets, message, subscriptions) => (() => {
     sockets.forEach(socket => socket.send(message));
-    subscriptions.forEach(sub => pushMessage(sub));
+    pushMessage(subscriptions);
   }))
   .sample(messages$)
   .subscribe(sendAll => sendAll());
 
-function pushMessage(subscription) {
-  console.log(subscription);
+function pushMessage(subscriptions) {
+  const regIds = subscriptions.map(sub => sub.replace(GCM_HOST+'/', ''));
+
+  request.post({
+    url: GCM_HOST,
+    headers: {
+      'Authorization': `key=${GCM_KEY}`,
+      'Content-Type': 'application/json'
+    },
+    json: true,
+    body: {
+      'registration_ids': regIds
+    }
+  }, function pushMessageSent(error, response, body) {
+    console.log(body);
+  });
 }
