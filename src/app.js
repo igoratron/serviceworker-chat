@@ -6,14 +6,19 @@ import Helpers from 'hyperscript-helpers';
 const {div, ul, li} = Helpers(h);
 
 import makeWebSocketDriver from './cycle-websocket-driver';
+import makePostMessageDriver from './cycle-postmessage-driver';
 import messageInput from './message-input.js';
 
-function intent(DOM, ws) {
+function intent(DOM, ws, postMessage) {
   return {
     newMessage$: DOM.select('.js-message-input')
       .events('newmessage')
-      .pluck('detail'),
-    messageReceived$: ws
+      .pluck('detail')
+      .map(message => ({ message })),
+    messageReceived$: ws,
+    subscription$: postMessage
+      .pluck('data')
+      .map(subscription => ({ subscription }))
   };
 }
 
@@ -37,12 +42,15 @@ function view(state$) {
   );
 }
 
-function main({DOM, ws}) {
-  const actions = intent(DOM, ws);
+function main({DOM, ws, postMessage}) {
+  const actions = intent(DOM, ws, postMessage);
 
   const requests = {
     DOM: view(model(actions.messageReceived$)),
-    ws: actions.newMessage$
+    ws: Rx.Observable.merge(
+      actions.newMessage$,
+      actions.subscription$
+    ).map(JSON.stringify)
   };
 
   return requests;
@@ -52,7 +60,9 @@ const drivers = {
   DOM: makeDOMDriver('[data-js-app]', {
     'message-input': messageInput
   }),
-  ws: makeWebSocketDriver('wss://ws.igormatics.com/ws')
+  //ws: makeWebSocketDriver('wss://ws.igormatics.com/ws'),
+  ws: makeWebSocketDriver('ws://localhost:8081'),
+  postMessage: makePostMessageDriver()
 };
 
 Cycle.run(main, drivers);

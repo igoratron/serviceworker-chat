@@ -18257,6 +18257,10 @@ var _cycleWebsocketDriver = require('./cycle-websocket-driver');
 
 var _cycleWebsocketDriver2 = _interopRequireDefault(_cycleWebsocketDriver);
 
+var _cyclePostmessageDriver = require('./cycle-postmessage-driver');
+
+var _cyclePostmessageDriver2 = _interopRequireDefault(_cyclePostmessageDriver);
+
 var _messageInput = require('./message-input.js');
 
 var _messageInput2 = _interopRequireDefault(_messageInput);
@@ -18269,10 +18273,15 @@ var div = _Helpers.div;
 var ul = _Helpers.ul;
 var li = _Helpers.li;
 
-function intent(DOM, ws) {
+function intent(DOM, ws, postMessage) {
   return {
-    newMessage$: DOM.select('.js-message-input').events('newmessage').pluck('detail'),
-    messageReceived$: ws
+    newMessage$: DOM.select('.js-message-input').events('newmessage').pluck('detail').map(function (message) {
+      return { message: message };
+    }),
+    messageReceived$: ws,
+    subscription$: postMessage.pluck('data').map(function (subscription) {
+      return { subscription: subscription };
+    })
   };
 }
 
@@ -18294,12 +18303,13 @@ function view(state$) {
 function main(_ref) {
   var DOM = _ref.DOM;
   var ws = _ref.ws;
+  var postMessage = _ref.postMessage;
 
-  var actions = intent(DOM, ws);
+  var actions = intent(DOM, ws, postMessage);
 
   var requests = {
     DOM: view(model(actions.messageReceived$)),
-    ws: actions.newMessage$
+    ws: _rx2.default.Observable.merge(actions.newMessage$, actions.subscription$).map(JSON.stringify)
   };
 
   return requests;
@@ -18309,12 +18319,34 @@ var drivers = {
   DOM: (0, _dom.makeDOMDriver)('[data-js-app]', {
     'message-input': _messageInput2.default
   }),
-  ws: (0, _cycleWebsocketDriver2.default)('wss://ws.igormatics.com/ws')
+  //ws: makeWebSocketDriver('wss://ws.igormatics.com/ws'),
+  ws: (0, _cycleWebsocketDriver2.default)('ws://localhost:8081'),
+  postMessage: (0, _cyclePostmessageDriver2.default)()
 };
 
 _core2.default.run(main, drivers);
 
-},{"./cycle-websocket-driver":121,"./message-input.js":122,"@cycle/core":1,"@cycle/dom":4,"hyperscript-helpers":72,"rx":79}],121:[function(require,module,exports){
+},{"./cycle-postmessage-driver":121,"./cycle-websocket-driver":122,"./message-input.js":123,"@cycle/core":1,"@cycle/dom":4,"hyperscript-helpers":72,"rx":79}],121:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = makePostMessageDriver;
+
+var _rx = require('rx');
+
+var _rx2 = _interopRequireDefault(_rx);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function makePostMessageDriver() {
+  return function webSocketDriver() {
+    return _rx2.default.Observable.fromEvent(window, 'message');
+  };
+};
+
+},{"rx":79}],122:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -18339,7 +18371,7 @@ function makeWebSocketDriver(url) {
   };
 };
 
-},{"rx":79}],122:[function(require,module,exports){
+},{"rx":79}],123:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {

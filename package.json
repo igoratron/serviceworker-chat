@@ -4,7 +4,7 @@
   "description": "",
   "scripts": {
     "start": "node src/server.js",
-    "browserify": "browserify src/app.js -t babelify --outfile public/app.js"
+    "compile:js": "browserify src/app.js -t babelify --outfile public/app.js && cp src/sw-setup.js src/serviceworker.js public/"
   },
   "author": "",
   "license": "ISC",
