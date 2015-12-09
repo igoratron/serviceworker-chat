@@ -60,8 +60,8 @@ const drivers = {
   DOM: makeDOMDriver('[data-js-app]', {
     'message-input': messageInput
   }),
-  //ws: makeWebSocketDriver('wss://ws.igormatics.com/ws'),
-  ws: makeWebSocketDriver('ws://localhost:8081'),
+  ws: makeWebSocketDriver('wss://ws.igormatics.com/ws'),
+  //ws: makeWebSocketDriver('ws://localhost:8081'),
   postMessage: makePostMessageDriver()
 };
 

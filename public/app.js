@@ -18319,8 +18319,8 @@ var drivers = {
   DOM: (0, _dom.makeDOMDriver)('[data-js-app]', {
     'message-input': _messageInput2.default
   }),
-  //ws: makeWebSocketDriver('wss://ws.igormatics.com/ws'),
-  ws: (0, _cycleWebsocketDriver2.default)('ws://localhost:8081'),
+  ws: (0, _cycleWebsocketDriver2.default)('wss://ws.igormatics.com/ws'),
+  //ws: makeWebSocketDriver('ws://localhost:8081'),
   postMessage: (0, _cyclePostmessageDriver2.default)()
 };
 
