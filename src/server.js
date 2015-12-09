@@ -49,10 +49,8 @@ const messages$ = envelopes$
 const subscriptions$ = envelopes$
   .filter(envelope => envelope.subscription)
   .pluck('subscription')
-  .scan(function aggregateSubs(all, sub) {
-    all.push(sub);
-    return all;
-  }, [])
+  .scan((all, sub) => all.add(sub), new Set())
+  .map(subs => Array.from(subs.values()))
   .startWith([]);
 
 Rx.Observable.combineLatest(
