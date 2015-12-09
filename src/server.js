@@ -34,11 +34,34 @@ const activeSockets$ = connectedSockets$
   }, new Map())
   .map(map => Array.from(map.values()));
 
-const messages$ = activeSockets$
+const envelopes$ = activeSockets$
   .flatMap(sockets => Rx.Observable.from(sockets))
   .flatMap(socket => Rx.Observable.fromEvent(socket, 'message'))
+  .map(JSON.parse);
 
-activeSockets$
-  .combineLatest(messages$, (sockets, message) => (() => sockets.forEach(socket => socket.send(message))))
+const messages$ = envelopes$
+  .filter(envelope => envelope.message)
+  .pluck('message');
+
+const subscriptions$ = envelopes$
+  .filter(envelope => envelope.subscription)
+  .scan(function aggregateSubs(all, sub) {
+    all.push(sub);
+    return all;
+  }, [])
+  .startWith([]);
+
+Rx.Observable.combineLatest(
+  activeSockets$,
+  messages$,
+  subscriptions$,
+  (sockets, message, subscriptions) => (() => {
+    sockets.forEach(socket => socket.send(message));
+    subscriptions.forEach(sub => pushMessage(sub));
+  }))
   .sample(messages$)
   .subscribe(sendAll => sendAll());
+
+function pushMessage(subscription) {
+  console.log(subscription);
+}
